@@ -3,9 +3,10 @@ import numpy as np
 from scipy.io import loadmat, savemat
 
 
-def extract_matrices_from_dir(matdir: str) -> dict[str, np.array]:
-    matfiles = [matdir + "/" + f for f in os.listdir(matdir) if f.endswith(".mat")]
-    matrices = {mf: loadmat(mf)["Problem"]["A"] for mf in matfiles}
+def load_matrices_from_dir(matdir: str, extract_func: callable, subset=None) -> dict[str, np.array]:
+    subset = subset if subset is not None else [f for f in os.listdir(matdir) if f.endswith(".mat")]
+    matfiles = [matdir + "/" + f for f in os.listdir(matdir) if f in subset]
+    matrices = {mf: extract_func(loadmat(mf)) for mf in matfiles}
     return matrices
 
 
