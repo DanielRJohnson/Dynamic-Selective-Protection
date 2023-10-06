@@ -1,30 +1,36 @@
-from collections import defaultdict
-import argparse
 import numpy as np
+import pandas as pd
+from scipy.sparse.linalg import norm
+import argparse
 from tqdm import tqdm
 
+from pcg import Pcg
 from io_utils import load_matrices_from_dir
-from pcg import pcg, Solution
 
 
-def run_experiment(matrix_set: list[str], n_runs=1, maxiter=10000, tol=1e-6,
-                   error_iter=None, error_pos=None) -> dict[str, list[Solution]]:
-    """ Runs PCG over given matrices with given params describing the experiment process """
-    raw_fps = [s + ".mat" for s in matrix_set]
-    precond_fps = [s + "_precond.mat" for s in matrix_set]
+def run_experiment(matrix_set: list[str], n_runs, maxiter, tol, error_perc, error_pos) -> list[pd.DataFrame]:
+    """ Runs PCG over a given matrix_set n_runs times possibly with errors. """
+    mats = load_matrices_from_dir("./matrices/raw", matrix_set)
+    preconditioners = load_matrices_from_dir("./matrices/preconditioners", matrix_set)
+    inject_error = error_perc is not None
 
-    mats = load_matrices_from_dir("./matrices/raw", lambda m: m["Problem"]["A"][0][0], raw_fps)
-    preconditioners = load_matrices_from_dir("./matrices/preconditioners", lambda m: m["L"], precond_fps)
-
-    inject_error = error_iter is not None
-    sols = defaultdict(list)
+    sols = []
     for mat_name, A, L in zip(mats.keys(), mats.values(), preconditioners.values()):
-        LT = L.T.tocsc()
-        for _ in tqdm(range(n_runs), desc=f"Solving {mat_name[15:]}"):
-            ep = error_pos if error_pos is not None else np.random.randint(A.shape[0])
-            b = A @ np.ones((A.shape[0], 1))
-            sol = pcg(A, b, tol, maxiter, L, LT, inject_error, ep, error_iter)
-            sols[mat_name].append(sol)
+        sol = pd.DataFrame(columns=["matrix_name", "error_perc", "error_pos", "pos_2norm", "errorfree_iterations",
+                                    "iterations", "final_relres", "converged", "time_s"])
+
+        b = A @ np.ones((A.shape[0], 1))
+        pcg = Pcg(A, b, L, L.T, tol, maxiter)
+
+        errorfree_iters = pcg(inject_error=False)[0]
+        error_iter = int(errorfree_iters * (error_perc / 100))
+
+        for i in tqdm(range(n_runs), desc=f"Solving {mat_name[15:]}"):
+            ep = error_pos if error_pos is not None else np.random.randint(1, A.shape[0] + 1)
+            res = pcg(inject_error, ep, error_iter)
+            sol.loc[i] = [mat_name, error_perc, ep, norm(A[ep]), errorfree_iters, *res[:-1]]
+
+        sols.append(sol)
 
     return sols
 
@@ -35,12 +41,13 @@ if __name__ == "__main__":
     parser.add_argument("--n_runs", type=int, default=1, help="Number of solves per matrix")
     parser.add_argument("--maxiter", type=int, default=10000, help="Maximum number of solver iterations")
     parser.add_argument("--tol", type=float, default=1e-6, help="Tolerance of the residual to be considered done")
-    parser.add_argument("--error_iter", type=int, default=None, help="Solver iteration to inject error")
-    parser.add_argument("--error_pos", type=int, default=None, help="Position in p vector to inject error")
+    parser.add_argument("--error_perc", type=float, default=None,
+                        help="Percentage of error-free iterations to place error at")
+    parser.add_argument("--error_pos", type=int, default=None, help="Position in p vector to place error at")
     args = parser.parse_args()
 
-    sols = run_experiment(args.subset, args.n_runs, args.maxiter, args.tol, args.error_iter, args.error_pos)
-    print("matrix_name, final_iteration, final_relres, converged")
-    for name, sol_list in sols.items():
-        for sol in sol_list:
-            print(f"{name}, {sol.final_iteration}, {sol.final_relres}, {sol.converged}")
+    sols = run_experiment(args.subset, args.n_runs, args.maxiter, args.tol, args.error_perc, args.error_pos)
+
+    for name, sol in zip(args.subset, sols):
+        fn = "analyses/data/" + "_".join([name, str(args.n_runs), str(args.error_perc), str(args.error_pos)]) + ".csv"
+        sol.to_csv(fn, index=False)
