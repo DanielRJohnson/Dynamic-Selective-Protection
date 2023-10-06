@@ -1,7 +1,12 @@
+from os.path import dirname
 from scipy.sparse import find
 
 from juliacall import Main as jl
 from juliacall import Pkg as jlPkg
+jlPkg.add("SparseArrays")
+jl.seval("using SparseArrays")
+jlPkg.activate(dirname(__file__) + "/Pcg")
+jl.seval("using Pcg")
 
 
 class Pcg:
@@ -9,10 +14,6 @@ class Pcg:
 
     def __init__(self, A, b, M1, M2, tol, maxiter) -> None:
         """ Initializes Julia packages and converts complex inputs to Julia types """
-        jlPkg.add("SparseArrays")
-        jl.seval("using SparseArrays")
-        jlPkg.activate("Pcg")
-        jl.seval("using Pcg")
         self.b = self.__convert_numpy(b)
         self.A, self.M1, self.M2 = [self.__convert_scipy(m) for m in [A, M1, M2]]
         self.tol, self.maxiter = tol, maxiter

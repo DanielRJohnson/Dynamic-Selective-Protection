@@ -1,3 +1,4 @@
+from os.path import dirname
 import numpy as np
 import pandas as pd
 from scipy.sparse.linalg import norm
@@ -10,8 +11,8 @@ from io_utils import load_matrices_from_dir
 
 def run_experiment(matrix_set: list[str], n_runs, maxiter, tol, error_percentages) -> list[pd.DataFrame]:
     """ Runs PCG over a given matrix_set n_runs times possibly with errors. """
-    mats = load_matrices_from_dir("./matrices/raw", matrix_set)
-    preconditioners = load_matrices_from_dir("./matrices/preconditioners", matrix_set)
+    mats = load_matrices_from_dir(dirname(__file__) + "/matrices/raw", matrix_set)
+    preconditioners = load_matrices_from_dir(dirname(__file__) + "/matrices/preconditioners", matrix_set)
     inject_error = len(error_percentages) != 0
 
     sols = []
@@ -45,7 +46,6 @@ if __name__ == "__main__":
     parser.add_argument("--tol", type=float, default=1e-6, help="Tolerance of the residual to be considered done")
     parser.add_argument("--error_percentages", type=float, nargs="+", default=[],
                         help="Percentages of error-free iterations to place errors at")
-    # parser.add_argument("--error_pos", type=int, default=None, help="Position in p vector to place error at")
     args = parser.parse_args()
 
     sols = run_experiment(args.subset, args.n_runs, args.maxiter, args.tol, args.error_percentages)
