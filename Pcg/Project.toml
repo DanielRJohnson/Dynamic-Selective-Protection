@@ -1,0 +1,9 @@
+name = "Pcg"
+uuid = "8ffc3672-ba62-4f90-bc1c-a10ffeb4b937"
+authors = ["Daniel Johnson <danielrjohnson00@gmail.com>"]
+version = "0.1.0"
+
+[deps]
+CondaPkg = "992eb4ea-22a4-4c89-a5bb-47a3300528ab"
+LinearAlgebra = "37e2e46d-f89d-539d-b4ee-838fcccc9c8e"
+SparseArrays = "2f01184e-e22b-5df5-ae63-d93ebab69eaf"

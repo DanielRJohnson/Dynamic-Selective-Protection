@@ -1,0 +1,5 @@
+#!/Users/danielrjohnson/My Drive/Research/code/Dynamic-Selective-Protection/Pcg/.CondaPkg/env/bin/python3.11
+
+import pydoc
+if __name__ == '__main__':
+    pydoc.cli()
