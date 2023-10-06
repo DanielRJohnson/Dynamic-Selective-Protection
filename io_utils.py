@@ -13,7 +13,7 @@ def load_matrices_from_dir(matdir: str, subset=None) -> dict[str, csr_matrix]:
 
     subset = [m + (".mat" if extract_mode == "raw" else "_precond.mat") for m in subset]
     matfiles = [matdir + "/" + f for f in os.listdir(matdir) if f in subset or subset is None]
-    matrices = {mf: extractors[extract_mode](loadmat(mf)) for mf in matfiles}
+    matrices = {mf.split("/")[-1]: extractors[extract_mode](loadmat(mf)) for mf in matfiles}
     return matrices
 
 

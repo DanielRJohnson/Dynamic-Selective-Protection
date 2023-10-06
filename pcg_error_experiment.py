@@ -27,7 +27,7 @@ def run_experiment(matrix_set: list[str], n_runs, maxiter, tol, error_percentage
             errorfree_iters = pcg(inject_error=False)[0]
             error_iter = int(errorfree_iters * (error_perc / 100)) if inject_error else -1
 
-            for i in tqdm(range(n_runs), desc=f"Solving {mat_name[15:]}"):
+            for i in tqdm(range(n_runs), desc=f"Solving {mat_name} ({error_perc}% Io)"):
                 res = pcg(inject_error, error_positions[i], error_iter)
                 row = [mat_name, error_perc, error_positions[i],
                        norm(A[error_positions[i]]), errorfree_iters, *res[:-1]]
