@@ -33,7 +33,7 @@ function pcg(A::SparseMatrixCSC, b::Matrix{Float64}, M1::SparseMatrixCSC, M2::Sp
 
         i = 0
         while i < maxit && relres > tol
-            if inject_error && i == error_iter
+            if inject_error && (i == error_iter)
                 p[error_pos] += maximum(p)
             end
 

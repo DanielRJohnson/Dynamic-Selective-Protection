@@ -28,9 +28,9 @@ def run_experiment(matrix_set: list[str], n_runs, maxiter, tol, error_percentage
             error_iter = int(errorfree_iters * (error_perc / 100)) if inject_error else -1
 
             for i in tqdm(range(n_runs), desc=f"Solving {mat_name} ({error_perc}% Io)"):
-                res = pcg(inject_error, error_positions[i], error_iter)
+                res = pcg(inject_error, error_positions[i], error_iter if error_iter != 0 else 1)
                 row = [mat_name, error_perc, error_positions[i],
-                       norm(A[error_positions[i]]), errorfree_iters, *res[:-1]]
+                       norm(A.getrow(error_positions[i])), errorfree_iters, *res[:-1]]
                 sol = pd.concat([sol, pd.DataFrame([row], columns=sol.columns)], ignore_index=True)
 
         sols.append(sol)
