@@ -1,7 +1,14 @@
 import os
+from time import strftime
+from collections import defaultdict
+
 import numpy as np
+import pandas as pd
 from scipy.io import loadmat, savemat
 from scipy.sparse import csr_matrix
+from scipy.sparse.linalg import norm
+
+from pcg import PcgOptions, PcgResult
 
 
 def load_matrices_from_dir(matdir: str, subset=None) -> dict[str, csr_matrix]:
@@ -21,3 +28,25 @@ def write_matrices(matrices: dict[str, np.array], varname: str) -> None:
     for fname, mat in matrices.items():
         mdict = {varname: mat}
         savemat(fname, mdict)
+
+
+def write_results_csv(mat_name: str, A: csr_matrix, errorfree_iterations: int, 
+                      opts_list: list[PcgOptions], results: list[PcgResult]) -> None:
+    assert len(opts_list) == len(results)
+    out = defaultdict(list)
+    for opt, res in zip(opts_list, results):
+        out["mat_name"].append(mat_name)
+        out["errorfree_iterations"].append(errorfree_iterations)
+        out["tol"].append(opt.tol)
+        out["maxiter"].append(opt.maxiter)
+        out["error_pos"].append(opt.error_pos)
+        out["error_iter"].append(opt.error_iter)
+        out["solve_iterations"].append(res.solve_iterations)
+        out["final_relres"].append(res.final_relres)
+        out["did_converge"].append(res.did_converge)
+        out["realtime_s"].append(res.realtime_s)
+        out["pos_2norm"].append(norm(A.getrow(opt.error_pos - 1)))
+
+    df = pd.DataFrame(out)
+    fn = os.path.dirname(__file__) + f"/analyses/data/{mat_name}_{strftime('%Y_%m_%d-%I_%M_%S_%p')}.csv"
+    df.to_csv(fn, index=False)
