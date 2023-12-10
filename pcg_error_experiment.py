@@ -1,55 +1,68 @@
 from os.path import dirname
-import numpy as np
-import pandas as pd
-from scipy.sparse.linalg import norm
-import argparse
-from tqdm import tqdm
+from argparse import ArgumentParser
+from dataclasses import dataclass
 
-from pcg import Pcg
-from io_utils import load_matrices_from_dir
+from numpy import ones
+from numpy.random import randint
+
+from pcg import pcg, batched_pcg, PcgOptions, PcgBatchJob, PcgInput
+from io_utils import load_matrices_from_dir, write_results_csv
 
 
-def run_experiment(matrix_set: list[str], n_runs, maxiter, tol, error_percentages) -> list[pd.DataFrame]:
-    """ Runs PCG over a given matrix_set n_runs times possibly with errors. """
-    mats = load_matrices_from_dir(dirname(__file__) + "/matrices/raw", matrix_set)
-    preconditioners = load_matrices_from_dir(dirname(__file__) + "/matrices/preconditioners", matrix_set)
-    inject_error = len(error_percentages) != 0
+@dataclass
+class ExperimentOptions:
+    """All options for running an experiment"""
+    matrix_set: list[str]  # ex: ["cbuckle", "bcsstk18"]
+    n_runs: int  # ex: 100
+    tol: float  # ex: 0.00001
+    error_iterations: list[int]  # ex: [1, 50, 100]
 
-    sols = []
+
+def get_options_from_args() -> ExperimentOptions:
+    """Parses a ExperimentOptions from command line arguments"""
+    parser = ArgumentParser(description="Runs a PCG solver over a set of matrices with errors.")
+    parser.add_argument("--subset", nargs="+", help="Subset of matrices to solve, names in /matrices (ex: cbuckle).")
+    parser.add_argument("--n_runs", type=int, default=1, help="Number of solves per matrix.")
+    parser.add_argument("--tol", type=float, default=1e-6, help="Tolerance of the residual to be considered done.")
+    parser.add_argument("--error_iterations", type=int, nargs="+", default=[],
+                        help="Manually specify multiple runs to happen at each fixed iteration (ex: 1 50 100)."
+                             "If not specified, an error will be injected randomly for each run.")
+    args = parser.parse_args()
+    return ExperimentOptions(args.subset, args.n_runs, args.tol, args.error_iterations)
+
+
+def run_experiment(opts: ExperimentOptions) -> None:
+    """Carries out a Pcg experiment as described in the given ExperimentOptions"""
+    mats = load_matrices_from_dir(dirname(__file__) + "/matrices/raw", opts.matrix_set)
+    preconditioners = load_matrices_from_dir(dirname(__file__) + "/matrices/preconditioners", opts.matrix_set)
+
     for mat_name, A, L in zip(mats.keys(), mats.values(), preconditioners.values()):
-        sol = pd.DataFrame(columns=["matrix_name", "error_perc", "error_pos", "pos_2norm", "errorfree_iterations",
-                                    "iterations", "final_relres", "converged", "time_s"])
-        error_positions = np.random.randint(1, A.shape[0], (n_runs,))
-        for error_perc in error_percentages if inject_error else [None]:
-            b = A @ np.ones((A.shape[0], 1))
-            pcg = Pcg(A, b, L, L.T, tol, maxiter)
+        b = A @ ones((A.shape[0], 1))  # fixed right hand side
+        pcg_input = PcgInput(A, b, L, L.T)
+        errorfree_opts = PcgOptions(tol=opts.tol)
+        errorfree_iters = pcg(pcg_input, errorfree_opts).solve_iterations
+        maxiter = errorfree_iters * 100
 
-            errorfree_iters = pcg(inject_error=False)[0]
-            error_iter = int(errorfree_iters * (error_perc / 100)) if inject_error else -1
+        pcg_runs = []
+        for _ in range(opts.n_runs):
+            pos = randint(1, A.shape[0] + 1)  # one-based indexing for Julia
+            if len(opts.error_iterations) == 0:  
+                i = randint(1, errorfree_iters)  # default functionality, one random iteration
+                pcg_runs.append(PcgOptions(tol=opts.tol, maxiter=maxiter, error_pos=pos, error_iter=i))
+            else:  
+                for i in opts.error_iterations:  # iterations manually selected
+                    pcg_runs.append(PcgOptions(tol=opts.tol, maxiter=maxiter, error_pos=pos, error_iter=i))
 
-            for i in tqdm(range(n_runs), desc=f"Solving {mat_name} ({error_perc}% Io)"):
-                res = pcg(inject_error, error_positions[i], error_iter if error_iter != 0 else 1)
-                row = [mat_name, error_perc, error_positions[i],
-                       norm(A.getrow(error_positions[i])), errorfree_iters, *res[:-1]]
-                sol = pd.concat([sol, pd.DataFrame([row], columns=sol.columns)], ignore_index=True)
+        inp = PcgInput(A, b, L, L.T)
+        job = PcgBatchJob(inp, pcg_runs)
+        results = batched_pcg(job)
+        write_results_csv(mat_name, A, errorfree_iters, pcg_runs, results)
 
-        sols.append(sol)
 
-    return sols
+def main():
+    opts = get_options_from_args()
+    run_experiment(opts)
 
 
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser(description="Runs a PCG solver over a set of matrices possibly with errors.")
-    parser.add_argument("--subset", nargs="+", help="Subset of matrices to solve")
-    parser.add_argument("--n_runs", type=int, default=1, help="Number of solves per matrix")
-    parser.add_argument("--maxiter", type=int, default=10000, help="Maximum number of solver iterations")
-    parser.add_argument("--tol", type=float, default=1e-6, help="Tolerance of the residual to be considered done")
-    parser.add_argument("--error_percentages", type=float, nargs="+", default=[],
-                        help="Percentages of error-free iterations to place errors at")
-    args = parser.parse_args()
-
-    sols = run_experiment(args.subset, args.n_runs, args.maxiter, args.tol, args.error_percentages)
-
-    for name, sol in zip(args.subset, sols):
-        fn = "analyses/data/" + "_".join([name, str(args.n_runs)]) + ".csv"
-        sol.to_csv(fn, index=False)
+    main()
