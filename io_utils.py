@@ -18,9 +18,12 @@ def load_matrices_from_dir(matdir: str, subset=None) -> dict[str, csr_matrix]:
         "preconditioners": lambda m: m["L"],
     }
 
-    subset = [m + (".mat" if extract_mode == "raw" else "_precond.mat") for m in subset]
-    matfiles = [matdir + "/" + f for f in os.listdir(matdir) if f in subset or subset is None]
-    matrices = {mf.split("/")[-1]: extractors[extract_mode](loadmat(mf)) for mf in matfiles}
+    subset = [m + (".mat" if extract_mode == "raw" else "_precond.mat")
+              for m in subset]
+    matfiles = [matdir + "/" +
+                f for f in os.listdir(matdir) if f in subset or subset is None]
+    matrices = {mf.split("/")[-1]: extractors[extract_mode]
+                (loadmat(mf)) for mf in matfiles}
     return matrices
 
 
@@ -30,7 +33,7 @@ def write_matrices(matrices: dict[str, np.array], varname: str) -> None:
         savemat(fname, mdict)
 
 
-def write_results_csv(mat_name: str, A: csr_matrix, errorfree_iterations: int, 
+def write_results_csv(mat_name: str, A: csr_matrix, errorfree_iterations: int,
                       opts_list: list[PcgOptions], results: list[PcgResult]) -> None:
     assert len(opts_list) == len(results)
     out = defaultdict(list)
@@ -48,5 +51,8 @@ def write_results_csv(mat_name: str, A: csr_matrix, errorfree_iterations: int,
         out["pos_2norm"].append(norm(A.getrow(opt.error_pos - 1)))
 
     df = pd.DataFrame(out)
-    fn = os.path.dirname(__file__) + f"/analyses/data/{mat_name}_{strftime('%Y_%m_%d-%I_%M_%S_%p')}.csv"
+    df["slowdown"] = df["solve_iterations"] / df["errorfree_iterations"]
+
+    fn = os.path.dirname(
+        __file__) + f"/analyses/data/{mat_name}_{strftime('%Y_%m_%d-%I_%M_%S_%p')}.csv"
     df.to_csv(fn, index=False)
