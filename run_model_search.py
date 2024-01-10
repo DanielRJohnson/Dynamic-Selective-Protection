@@ -36,7 +36,8 @@ class BayesSearchOptions:
 
 def get_args() -> tuple[DataOptions, BayesSearchOptions]:
     """Parses a ModelSearchOptions from command line arguments"""
-    parser = ArgumentParser(description="")
+    parser = ArgumentParser(
+        description="Runs a model search over a given data file, features, and target.")
     parser.add_argument("--data_file", type=str,
                         help="Path to the data file to train on")
     parser.add_argument("--features", nargs="+", type=str,
@@ -112,7 +113,8 @@ def get_data(opts: DataOptions) -> tuple[ndarray, ndarray]:
     return X, y
 
 
-@ignore_warnings(category=UserWarning)  # for excessive BayesSearchCV warnings
+# for excessive BayesSearchCV.fit warnings
+@ignore_warnings(category=UserWarning)
 def run_model_search(searches: list[BayesSearchCV], X: ndarray, y: ndarray) -> None:
     """Runs given searches over data X and y, then dumps best models to file"""
     for search in tqdm(searches, desc="Model Searches"):

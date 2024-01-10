@@ -14,10 +14,11 @@ jl.seval("using SparseArrays")
 @dataclass
 class IterableDataclass:
     """Superclass to allow iteration on a dataclass"""
+
     def __iter__(self):
         """allow conversion to list, tuple, etc."""
         for _, v in asdict(self).items():
-            yield(v)
+            yield (v)
 
 
 @dataclass
@@ -32,19 +33,17 @@ class PcgInput(IterableDataclass):
     M1: csr_matrix
     M2: csr_matrix
 
-
     def __post_init__(self):
         """Convert types to be compatable with Julia conversions after initialization"""
-        self.A, self.M1, self.M2 = [self.__convert_scipy(m) for m in [self.A, self.M1, self.M2]]
+        self.A, self.M1, self.M2 = [self.__convert_scipy(
+            m) for m in [self.A, self.M1, self.M2]]
         self.b = self.__convert_numpy(self.b)
-
 
     def __convert_scipy(self, A):
         """Converts a scipy sparse matrix to a Julia SparseMatrixCSC"""
         I, J, V = map(lambda v: jl.Vector(v), find(A))
         inc = jl.seval("x -> x .+ 1")  # change to 1-indexed
         return jl.sparse(inc(I), inc(J), V)
-
 
     def __convert_numpy(self, x):
         """Converts a numpy array to a Julia Matrix"""
@@ -55,9 +54,10 @@ class PcgInput(IterableDataclass):
 class PcgOptions(IterableDataclass):
     """All options for Pcg"""
     tol: float = 1e-6
-    maxiter: int = 2**63 - 1 # max Int64
+    maxiter: int = 2**63 - 1  # max Int64
     error_pos: int = 1
     error_iter: int = None
+    protections: list[list[bool]] = None
 
 
 @dataclass
@@ -67,7 +67,7 @@ class PcgBatchJob(IterableDataclass):
     options_list: list[PcgOptions]
 
 
-@dataclass 
+@dataclass
 class PcgResult(IterableDataclass):
     """Result information given from Pcg"""
     solve_iterations: int
@@ -84,5 +84,6 @@ def pcg(inp: PcgInput, opts: PcgOptions) -> PcgResult:
 
 def batched_pcg(job: PcgBatchJob) -> list[PcgResult]:
     """Returns one PcgResult for each job in the PcgBatchJob"""
-    results = jl.batched_pcg(*job.pcg_input, [tuple(opts) for opts in job.options_list])
+    results = jl.batched_pcg(
+        *job.pcg_input, [tuple(opts) for opts in job.options_list])
     return [PcgResult(*res) for res in results]

@@ -1,6 +1,7 @@
 import os
 from time import strftime
 from collections import defaultdict
+from joblib import load
 
 import numpy as np
 import pandas as pd
@@ -33,6 +34,10 @@ def write_matrices(matrices: dict[str, np.array], varname: str) -> None:
         savemat(fname, mdict)
 
 
+def load_models(model_paths: list[str]):
+    return [load(path) for path in model_paths]
+
+
 def write_results_csv(mat_name: str, A: csr_matrix, errorfree_iterations: int,
                       opts_list: list[PcgOptions], results: list[PcgResult]) -> None:
     assert len(opts_list) == len(results)
@@ -49,6 +54,9 @@ def write_results_csv(mat_name: str, A: csr_matrix, errorfree_iterations: int,
         out["did_converge"].append(res.did_converge)
         out["realtime_s"].append(res.realtime_s)
         out["pos_2norm"].append(norm(A.getrow(opt.error_pos - 1)))
+        out["n_protections"].append(
+            0 if opt.protections is None else opt.protections.sum())
+        out["n_rows"].append(A.shape[0])
 
     df = pd.DataFrame(out)
     df["slowdown"] = df["solve_iterations"] / df["errorfree_iterations"]

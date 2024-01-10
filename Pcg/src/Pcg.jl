@@ -24,9 +24,10 @@ https://en.wikipedia.org/wiki/Conjugate_gradient_method#The_preconditioned_conju
 `inject_error::Bool` whether or not to inject an error
 `error_pos::Int` The position of p to inject the error
 `error_iter::Int` The iteration in which to inject the error
+`protections::Matrix{Bool}` Protection scheme describing which iter-pos pairs to protect
 """
 function _pcg(A::SparseMatrixCSC, b::Matrix{Float64}, M1::SparseMatrixCSC, M2::SparseMatrixCSC,
-    tol::Float64, maxit::Int, error_pos=1, error_iter=nothing)::PcgResult
+    tol::Float64, maxit::Int, error_pos=1, error_iter=nothing, protections=nothing)::PcgResult
 
     # convert M1, M2 to UmfpackLU for efficient, non-allocating solving
     M1_umf = SparseArrays.UMFPACK.UmfpackLU(M1)
@@ -47,7 +48,8 @@ function _pcg(A::SparseMatrixCSC, b::Matrix{Float64}, M1::SparseMatrixCSC, M2::S
 
         i = 0
         while i < maxit && relres > tol
-            if !isnothing(error_iter) && (i == error_iter)
+            if !isnothing(error_iter) && (i == error_iter) &&
+               (isnothing(protections) || !protections[i, error_pos])
                 p[error_pos] += maximum(p)
             end
 
