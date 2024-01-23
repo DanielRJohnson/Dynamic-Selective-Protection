@@ -54,8 +54,6 @@ def write_results_csv(mat_name: str, A: csr_matrix, errorfree_iterations: int,
         out["did_converge"].append(res.did_converge)
         out["realtime_s"].append(res.realtime_s)
         out["pos_2norm"].append(norm(A.getrow(opt.error_pos - 1)))
-        out["n_protections"].append(
-            0 if opt.protections is None else opt.protections.sum())
         out["n_rows"].append(A.shape[0])
 
     df = pd.DataFrame(out)

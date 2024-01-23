@@ -57,7 +57,6 @@ class PcgOptions(IterableDataclass):
     maxiter: int = 2**63 - 1  # max Int64
     error_pos: int = 1
     error_iter: int = None
-    protections: list[list[bool]] = None
 
 
 @dataclass

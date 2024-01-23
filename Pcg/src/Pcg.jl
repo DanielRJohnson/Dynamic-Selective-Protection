@@ -27,7 +27,7 @@ https://en.wikipedia.org/wiki/Conjugate_gradient_method#The_preconditioned_conju
 `protections::Matrix{Bool}` Protection scheme describing which iter-pos pairs to protect
 """
 function _pcg(A::SparseMatrixCSC, b::Matrix{Float64}, M1::SparseMatrixCSC, M2::SparseMatrixCSC,
-    tol::Float64, maxit::Int, error_pos=1, error_iter=nothing, protections=nothing)::PcgResult
+    tol::Float64, maxit::Int, error_pos=1, error_iter=nothing)::PcgResult
 
     # convert M1, M2 to UmfpackLU for efficient, non-allocating solving
     M1_umf = SparseArrays.UMFPACK.UmfpackLU(M1)
@@ -48,8 +48,7 @@ function _pcg(A::SparseMatrixCSC, b::Matrix{Float64}, M1::SparseMatrixCSC, M2::S
 
         i = 0
         while i < maxit && relres > tol
-            if !isnothing(error_iter) && (i == error_iter) &&
-               (isnothing(protections) || !protections[i, error_pos])
+            if !isnothing(error_iter) && (i == error_iter)
                 p[error_pos] += maximum(p)
             end
 
