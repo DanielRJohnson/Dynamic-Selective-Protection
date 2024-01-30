@@ -1,8 +1,8 @@
 # tcl pkg-config source file
 
-prefix=/Users/danielrjohnson/My Drive/Research/code/Dynamic-Selective-Protection/Pcg/.CondaPkg/env
-exec_prefix=/Users/danielrjohnson/My Drive/Research/code/Dynamic-Selective-Protection/Pcg/.CondaPkg/env
-libdir=/Users/danielrjohnson/My Drive/Research/code/Dynamic-Selective-Protection/Pcg/.CondaPkg/env/lib
+prefix=/Users/danielrjohnson/My_Drive/Research/code/Dynamic-Selective-Protection/Pcg/.CondaPkg/env
+exec_prefix=/Users/danielrjohnson/My_Drive/Research/code/Dynamic-Selective-Protection/Pcg/.CondaPkg/env
+libdir=/Users/danielrjohnson/My_Drive/Research/code/Dynamic-Selective-Protection/Pcg/.CondaPkg/env/lib
 includedir=${prefix}/include
 libfile=libtcl8.6.dylib
 

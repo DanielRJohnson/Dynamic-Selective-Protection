@@ -5,10 +5,10 @@
 # You can do whatever you want with this file.
 #
 
-prefix=/Users/danielrjohnson/My Drive/Research/code/Dynamic-Selective-Protection/Pcg/.CondaPkg/env
-exec_prefix=/Users/danielrjohnson/My Drive/Research/code/Dynamic-Selective-Protection/Pcg/.CondaPkg/env
-libdir=/Users/danielrjohnson/My Drive/Research/code/Dynamic-Selective-Protection/Pcg/.CondaPkg/env/lib
-includedir=/Users/danielrjohnson/My Drive/Research/code/Dynamic-Selective-Protection/Pcg/.CondaPkg/env/include
+prefix=/Users/danielrjohnson/My_Drive/Research/code/Dynamic-Selective-Protection/Pcg/.CondaPkg/env
+exec_prefix=/Users/danielrjohnson/My_Drive/Research/code/Dynamic-Selective-Protection/Pcg/.CondaPkg/env
+libdir=/Users/danielrjohnson/My_Drive/Research/code/Dynamic-Selective-Protection/Pcg/.CondaPkg/env/lib
+includedir=/Users/danielrjohnson/My_Drive/Research/code/Dynamic-Selective-Protection/Pcg/.CondaPkg/env/include
 
 Name: liblzma
 Description: General purpose data compression library

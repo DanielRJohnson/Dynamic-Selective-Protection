@@ -1,0 +1,5 @@
+#!/Users/danielrjohnson/My_Drive/Research/code/Dynamic-Selective-Protection/Pcg/.CondaPkg/env/bin/python3.12
+
+from idlelib.pyshell import main
+if __name__ == '__main__':
+    main()

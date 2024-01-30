@@ -144,14 +144,14 @@
                 "_path": "lib/pkgconfig/history.pc",
                 "path_type": "hardlink",
                 "sha256": "1bdba9b56ee0e64643d8b40627ebe1cabf38045ebbb3d79952165594db32e605",
-                "sha256_in_prefix": "51f83862561e228f1e981a9ce9a868073105cd758878592f89fe600549a17e1c",
+                "sha256_in_prefix": "ac3f42cae65b6c93d69dabbe85c129ca750739279385b528a29edfca8dc4a25b",
                 "size_in_bytes": 548
             },
             {
                 "_path": "lib/pkgconfig/readline.pc",
                 "path_type": "hardlink",
                 "sha256": "b79c65cecc423324e4662af3b31bd8837c3daf1fbe21b3f259a925697c7c9610",
-                "sha256_in_prefix": "907e5ba18e964ab7a8841e2a69ef1147fe3d2e1a64288c0ee7bab7a2e4781268",
+                "sha256_in_prefix": "b590e07c1b123412b056f1067b6282ddd44d4d2a48460ebacff2bc861d60eb3c",
                 "size_in_bytes": 564
             },
             {

@@ -371,7 +371,7 @@
                 "_path": "lib/pkgconfig/liblzma.pc",
                 "path_type": "hardlink",
                 "sha256": "0018a85117bebe6683a579395d3d8050768c7708a6a9ccb3b03531e8873c1727",
-                "sha256_in_prefix": "e097f33e57bf04f63a3540f38cd9c5aa44d6bcfbd49c70faaf16991965fac67a",
+                "sha256_in_prefix": "a9cb335c11b020a73475e21eee9e3fc788de167b1ee0bec32ff03977e98f62e2",
                 "size_in_bytes": 1394
             },
             {

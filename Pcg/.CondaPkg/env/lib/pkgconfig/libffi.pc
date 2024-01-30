@@ -1,8 +1,8 @@
-prefix=/Users/danielrjohnson/My Drive/Research/code/Dynamic-Selective-Protection/Pcg/.CondaPkg/env
+prefix=/Users/danielrjohnson/My_Drive/Research/code/Dynamic-Selective-Protection/Pcg/.CondaPkg/env
 exec_prefix=${prefix}
 libdir=${exec_prefix}/lib
 toolexeclibdir=${libdir}
-includedir=/Users/danielrjohnson/My Drive/Research/code/Dynamic-Selective-Protection/Pcg/.CondaPkg/env/include
+includedir=/Users/danielrjohnson/My_Drive/Research/code/Dynamic-Selective-Protection/Pcg/.CondaPkg/env/include
 
 Name: libffi
 Description: Library supporting Foreign Function Interfaces
