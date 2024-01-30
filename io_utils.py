@@ -1,6 +1,5 @@
 import os
-from time import strftime
-from collections import defaultdict
+from collections import defaultdict, OrderedDict
 from joblib import load
 
 import numpy as np
@@ -23,8 +22,12 @@ def load_matrices_from_dir(matdir: str, subset=None) -> dict[str, csr_matrix]:
               for m in subset]
     matfiles = [matdir + "/" +
                 f for f in os.listdir(matdir) if f in subset or subset is None]
-    matrices = {mf.split("/")[-1]: extractors[extract_mode]
-                (loadmat(mf)) for mf in matfiles}
+
+    matrices = OrderedDict()  # sort alphabetically to ensure consistency between calls
+    for mf in sorted(matfiles, key=lambda m: m.split("/")[-1]):
+        mat = loadmat(mf)
+        matrices[mf.split("/")[-1]] = extractors[extract_mode](mat)
+
     return matrices
 
 
@@ -60,5 +63,5 @@ def write_results_csv(mat_name: str, A: csr_matrix, errorfree_iterations: int,
     df["slowdown"] = df["solve_iterations"] / df["errorfree_iterations"]
 
     fn = os.path.dirname(
-        __file__) + f"/analyses/data/{mat_name}_{strftime('%Y_%m_%d-%I_%M_%S_%p')}.csv"
+        __file__) + f"/analyses/data/{mat_name[:-4]}_{len(results)}.csv"
     df.to_csv(fn, index=False)

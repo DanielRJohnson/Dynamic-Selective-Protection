@@ -7,6 +7,7 @@ from numpy import ndarray
 from juliacall import Main as jl
 jl.seval("using Pkg")
 jl.seval(f'Pkg.activate("{dirname(__file__) + "/Pcg"}")')
+jl.seval(f'Pkg.instantiate()')
 jl.seval("using Pcg")
 jl.seval("using SparseArrays")
 
@@ -38,6 +39,10 @@ class PcgInput(IterableDataclass):
         self.A, self.M1, self.M2 = [self.__convert_scipy(
             m) for m in [self.A, self.M1, self.M2]]
         self.b = self.__convert_numpy(self.b)
+        assert self.A.shape == self.M1.shape == self.M2.shape, \
+            f"Matrix and LU Preconditioner Dims must agree, got {self.A.shape}, {self.M1.shape}, and {self.M2.shape}"
+        assert self.A.shape[0] == self.b.shape[0], \
+            f"A row dim must match b dim, got {self.A.shape[0]} and {self.b.shape}"
 
     def __convert_scipy(self, A):
         """Converts a scipy sparse matrix to a Julia SparseMatrixCSC"""

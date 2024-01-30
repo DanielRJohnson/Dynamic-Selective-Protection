@@ -12,11 +12,11 @@ from sklearn.svm import LinearSVR
 from sklearn.utils._testing import ignore_warnings
 
 from os.path import dirname
+from os import makedirs
 from argparse import ArgumentParser
 from dataclasses import dataclass, asdict
 from joblib import dump
 from tqdm import tqdm
-from time import strftime
 
 
 @dataclass
@@ -115,20 +115,24 @@ def get_data(opts: DataOptions) -> tuple[ndarray, ndarray]:
 
 # for excessive BayesSearchCV.fit warnings
 @ignore_warnings(category=UserWarning)
-def run_model_search(searches: list[BayesSearchCV], X: ndarray, y: ndarray) -> None:
+def run_model_search(dir_path: str, searches: list[BayesSearchCV], X: ndarray, y: ndarray) -> None:
     """Runs given searches over data X and y, then dumps best models to file"""
     for search in tqdm(searches, desc="Model Searches"):
         search.fit(X, y)
         best = search.best_estimator_
-        dump(best, f"{dirname(__file__)}/analyses/models/best_" +
-             f"{best.steps[-1][1].__class__.__name__}_{strftime('%Y_%m_%d-%I_%M_%S_%p')}.pkl")
+        dump(best, f"{dir_path}/best_" +
+             f"{best.steps[-1][1].__class__.__name__}.pkl")
 
 
 def main():
     data_opts, search_opts = get_args()
     searches = generate_searches(search_opts)
     X, y = get_data(data_opts)
-    run_model_search(searches, X, y)
+    # /x/y/z/matname_NUMBER.csv -> matname
+    mat_name = data_opts.data_file.split("/")[-1].split("_")[0]
+    model_dir = f"{dirname(__file__)}/analyses/models/{mat_name}"
+    makedirs(model_dir, exist_ok=True)
+    run_model_search(model_dir, searches, X, y)
 
 
 if __name__ == "__main__":
