@@ -128,8 +128,8 @@ def main():
     data_opts, search_opts = get_args()
     searches = generate_searches(search_opts)
     X, y = get_data(data_opts)
-    # /x/y/z/matname_NUMBER.csv -> matname
-    mat_name = data_opts.data_file.split("/")[-1].split("_")[0]
+    # /x/y/z/mat_name_NUMBER.csv -> mat_name
+    mat_name = "_".join(data_opts.data_file.split("/")[-1].split("_")[:-1])
     model_dir = f"{dirname(__file__)}/analyses/models/{mat_name}"
     makedirs(model_dir, exist_ok=True)
     run_model_search(model_dir, searches, X, y)
