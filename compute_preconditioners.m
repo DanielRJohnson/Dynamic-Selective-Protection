@@ -8,7 +8,7 @@ function compute_preconditioners
 % matrices = {'cvxbqp1', 'thermal1', 'nd6k', ...
 %    'bcsstk18', 'bodyy5', 'cbuckle', 'Pres_Poisson', 'bcsstk36', 'ct20stif', 'gyro_m', 't2dah_e', 'm_t1', 'msc23052', '2cubes_sphere', 'pwtk', 'G2_circuit', 'raefsky4', ...
 %    'Trefethen_20000', 'vanbody','wathen100'};
-matrices = {'ASIC_100ks'};
+matrices = {'x104'};
 num_matrices = length(matrices);
 
 opt_type = 'ict'; % 'nofill'
