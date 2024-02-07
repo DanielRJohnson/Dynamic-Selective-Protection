@@ -19,9 +19,9 @@ def load_matrices_from_dir(matdir: str, subset=None) -> dict[str, csr_matrix]:
     }
 
     subset = [m + (".mat" if extract_mode == "raw" else "_precond.mat")
-              for m in subset]
+              for m in subset] if subset is not None else None
     matfiles = [matdir + "/" +
-                f for f in os.listdir(matdir) if f in subset or subset is None]
+                f for f in os.listdir(matdir) if subset is None or f in subset]
 
     matrices = OrderedDict()  # sort alphabetically to ensure consistency between calls
     for mf in sorted(matfiles, key=lambda m: m.split("/")[-1]):
