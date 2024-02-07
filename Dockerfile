@@ -15,10 +15,7 @@ RUN mkdir -p ~/miniconda3 && \
     rm -rf ~/miniconda3/miniconda.sh && \
     ~/miniconda3/bin/conda init bash && \
     source ~/.bashrc && \
-    conda create -n prot_env && \
-    conda activate prot_env && \
     conda install python=3.11 pip && \
-    echo 'conda activate prot_env' >> ~/.bashrc
 
 # copy reqs to image and build
 COPY ./requirements.txt /
