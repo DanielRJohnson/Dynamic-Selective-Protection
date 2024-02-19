@@ -15,7 +15,7 @@ RUN mkdir -p ~/miniconda3 && \
     rm -rf ~/miniconda3/miniconda.sh && \
     ~/miniconda3/bin/conda init bash && \
     source ~/.bashrc && \
-    conda install python=3.11 pip && \
+    conda install python=3.11 pip
 
 # copy reqs to image and build
 COPY ./requirements.txt /
